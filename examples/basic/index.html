@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <base href="https://localhost/FrontEnd/VueRouter3/html/Advanced/" />
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "http://localhost/FrontEnd/assets/js/vue2/vue.esm.browser.js",
+          "vue-router": "http://localhost/Project/my-vue-router3/dist/vue-router.esm.browser.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <router-link to="foo"> Foo</router-link>
+      <!-- <router-link to="/bar">Bar</router-link> -->
+      <router-view></router-view>
+    </div>
+    <script type="module">
+      import Vue from 'vue';
+      import VueRouter from 'vue-router';
+      Vue.use(VueRouter);
+
+      const Foo = {
+        template: /*html*/ `
+        <div>
+          <div> 
+            <span>foo</span>
+            <!--没有设置 append,则 to 必须为全路径-->
+            <!--<router-link to='/foo/info'>info</router-link>-->
+          </div>
+          <router-view></router-view>
+        </div>
+        `,
+      };
+      const Bar = {
+        template: /*html*/ `
+        <div>
+          <div>
+            <span>bar</span>
+            <!-- 设置了子路由，则to可以为相对于父路径的路径-->
+            <router-link to='user' :append='true'>user</router-link>
+          </div>
+          <router-view></router-view>
+        </div>
+        `,
+      };
+      const Info = { template: '<div>Info</div>' };
+      const User = { template: '<div>user</div>' };
+
+      const router = new VueRouter({
+        routes: [
+          {
+            path: '/foo',
+            component: Foo,
+            children: [{ path: 'info', component: Info }],
+          },
+          {
+            path: '/bar',
+            component: Bar,
+            children: [{ path: 'user', component: User }],
+          },
+        ],
+        mode: 'hash',
+      });
+      new Vue({
+        name: 'app',
+        el: '#app',
+        router,
+        created() {},
+      });
+    </script>
+  </body>
+</html>

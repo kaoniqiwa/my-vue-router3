@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    /**编辑结果采用 es2016 API*/
+    "target": "es2016",
+    /**编辑结果采用 esnext 规范*/
+    "module": "ESNext",
+    /**依赖包路径解析采用 node 策略*/
+    "moduleResolution": "node",
+    /**API 库*/
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    /**源码中使用 Node API 时需要*/
+    "types": ["node"]
+  },
+  /**ts-node 配置项*/
+  "ts-node": { "esm": true }
+}
