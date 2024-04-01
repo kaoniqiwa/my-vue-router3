@@ -47,6 +47,7 @@ export function parsePath(path: string) {
   };
 }
 
+/**根据基路径和当前路径，计算出绝对路径 */
 export function resolvePath(relative: string, base: string, append?: boolean) {
   const firstChar = relative.charAt(0);
   /** to='/foo'已经是绝对路径 */

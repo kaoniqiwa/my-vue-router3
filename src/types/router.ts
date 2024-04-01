@@ -19,6 +19,14 @@ export type Matcher = {
   getRoutes: () => Array<RouteRecord>;
 };
 export type RawLocation = string | Location;
+export type NavigationGuardNext<V extends Vue = Vue> = (
+  to?: RawLocation | false | ((vm: V) => any)
+) => void;
+export type NavigationGuard = (
+  to: Route,
+  from: Route,
+  next: NavigationGuardNext
+) => any;
 
 interface _RouteConfigBase {
   path: string;
@@ -42,6 +50,8 @@ export interface RouterOptions {
   routes?: RouteConfig[];
   mode?: RouterMode;
   base?: string;
+  stringifyQuery?: (query: Object) => string;
+  parseQuery?: (query: string) => Object;
 }
 export interface RouteRecord {
   path: string;
@@ -53,7 +63,9 @@ export interface RouteRecord {
 export interface Route {
   path: string;
   fullPath: string;
+  hash: string;
   matched: RouteRecord[];
+  query: Dictionary<string | (string | null)[] | null | undefined>;
 }
 export interface Location {
   _normalized?: boolean;
@@ -61,7 +73,15 @@ export interface Location {
   name?: string;
   params?: Dictionary<string>;
   hash?: string;
+  append?: boolean;
   query?: Dictionary<string | (string | null)[] | null | undefined>;
 }
 
 export interface RouteRegExp extends RegExp {}
+
+export enum NavigationFailureType {
+  redirected = 2,
+  aborted = 4,
+  cancelled = 8,
+  duplicated,
+}

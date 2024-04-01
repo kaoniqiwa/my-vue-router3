@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <base href="https://localhost/FrontEnd/VueRouter3/html/Advanced/" />
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "http://localhost/FrontEnd/assets/js/vue2/vue.esm.browser.js",
+          "vue-router": "http://localhost/Project/my-vue-router3/dist/vue-router.esm.browser.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import Vue from 'vue';
+      import VueRouter from 'vue-router';
+      Vue.use(VueRouter);
+
+      const Home = { template: '<div>home</div>' };
+
+      const router = new VueRouter({
+        routes: [
+          {
+            path: '/home',
+            component: Home,
+          },
+        ],
+      });
+      router.beforeEach((to, from, next) => {
+        console.log('to', to);
+        console.log('from', from);
+        next();
+      });
+      router.beforeEach((to, from, next) => {
+        console.log('before each');
+        next();
+      });
+
+      new Vue({
+        name: 'app',
+        el: '#app',
+        router,
+      });
+    </script>
+  </body>
+</html>

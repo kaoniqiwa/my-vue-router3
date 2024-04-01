@@ -24,6 +24,7 @@ export function createMatcher(
     currentRoute?: Route,
     redirectedFrom?: Location
   ): Route {
+    /**将字符串地址转成对象形式 */
     const location = normalizeLocation(raw, currentRoute, false, router);
     const { name } = location;
     if (name) {
@@ -38,7 +39,10 @@ export function createMatcher(
         }
       }
     }
-    /**location 未匹配到任何 RouteRecord */
+    /**
+     * location 未匹配到任何 RouteRecord,则当前 location 的 matched 为 []
+     * 未匹配到静态设置的路由，以后动态添加路由可能匹配到，所以即使匹配失败，也创建一份 Route
+     */
     return _createRoute(null, location);
   }
 

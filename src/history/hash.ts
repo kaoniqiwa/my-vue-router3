@@ -1,6 +1,6 @@
 import VueRouter from '..';
 import { RawLocation, Route } from '../types';
-import { replaceState, supportsPushState } from '../util/push-state';
+import { pushState, replaceState, supportsPushState } from '../util/push-state';
 import { History } from './base';
 
 export class HashHistory extends History {
@@ -44,6 +44,13 @@ export class HashHistory extends History {
       window.removeEventListener(eventType, handleRoutingEvent);
     });
   }
+  ensureURL(push?: boolean) {
+    const current = this.current.fullPath;
+
+    if (getHash() !== current) {
+      push ? pushHash(current) : replaceHash(current);
+    }
+  }
 }
 
 /** '#/foo' => '/foo' */
@@ -64,7 +71,13 @@ function ensureSlash() {
   replaceHash('/' + path);
   return false;
 }
-
+function pushHash(path: string) {
+  if (supportsPushState) {
+    pushState(getUrl(path));
+  } else {
+    window.location.hash = path;
+  }
+}
 function replaceHash(path: string) {
   if (supportsPushState) {
     replaceState(getUrl(path));

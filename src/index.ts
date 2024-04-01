@@ -9,6 +9,7 @@ import {
   RouterMode,
   RouterOptions,
   Location,
+  NavigationGuard,
 } from './types';
 import { warn, assert } from './util/warn';
 import { HTML5History } from './history/html5';
@@ -24,8 +25,9 @@ export default class VueRouter {
   app: Vue | null = null;
   apps: Array<Vue> = [];
   mode: RouterMode = RouterMode.Hash;
-  beforeHooks: Array<Function> = [];
-  afterHooks: Array<Function> = [];
+  beforeHooks: Array<NavigationGuard> = [];
+  resolveHooks: Array<NavigationGuard> = [];
+  afterHooks: Array<NavigationGuard> = [];
   matcher: Matcher;
   history?: History;
 
@@ -72,11 +74,25 @@ export default class VueRouter {
         `not installed. Make sure to call \`Vue.use(VueRouter)\` ` +
           `before creating root instance.`
       );
+    /**router作为配置选项传入多个 new Vue({...}) 时*/
     this.apps.push(app);
 
+    /**vm实例销毁时会抛出 hook:destroyed 事件 */
+    app.$once('hook:destroyed', () => {
+      const index = this.apps.indexOf(app);
+      if (index >= -1) this.apps.splice(index, 1);
+      /**当前的 app 销毁后，app取下一个 */
+      if (this.app === app) this.app = this.apps[0] || null;
+
+      /**没有使用 router 的app时，对 window removeListener */
+      if (!this.app) {
+        this.history?.teardown();
+      }
+    });
     /**
      * 全局Vue.mixin(beforeCreate(){...}) 中会自动调用 router.init(),
      * 如果组件自身beforeCreate(){...}也调用 router.init()时，不需要重复调用
+     * 且多个 app 共享同一个 router 状态
      */
     if (this.app) {
       return;
@@ -89,7 +105,7 @@ export default class VueRouter {
         history.setupListeners();
       };
 
-      /**初次根据浏览器上的路径匹配路由,匹配成功后添加事件监听，监听浏览器操作 */
+      /**初次根据浏览器上的路径匹配路由,如果匹配成功，则添加事件监听，监听浏览器操作 */
       history.transitionTo(
         history.getCurrentLocation(),
         setupListeners,
@@ -141,7 +157,9 @@ export default class VueRouter {
     };
   }
   /**钩子函数 */
-  beforeEach() {}
+  beforeEach(fn: NavigationGuard) {
+    registerHook(this.beforeHooks, fn);
+  }
   beforeResolve() {}
   afterEach() {}
 }
@@ -149,4 +167,16 @@ export default class VueRouter {
 function createHref(base: string, fullPath: string, mode: RouterMode) {
   var path = mode === 'hash' ? '#' + fullPath : fullPath;
   return base ? cleanPath(base + '/' + path) : path;
+}
+
+/**注册钩子，在路由期间会调用钩子 */
+function registerHook(list: Array<NavigationGuard>, fn: NavigationGuard) {
+  list.push(fn);
+  /**取消钩子 */
+  return () => {
+    let index = list.indexOf(fn);
+    if (index > -1) {
+      list.splice(index, 1);
+    }
+  };
 }
